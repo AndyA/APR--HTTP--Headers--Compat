@@ -14,13 +14,18 @@ ok( $h );
 ok( ref( $h ),     "APR::HTTP::Headers::Compat" );
 ok( $h->as_string, "" );
 
-$h = APR::HTTP::Headers::Compat->new( foo => "bar", foo => "baaaaz", Foo => "baz" );
+$h = APR::HTTP::Headers::Compat->new(
+  foo => "bar",
+  foo => "baaaaz",
+  Foo => "baz"
+);
 ok( $h->as_string, "Foo: bar\nFoo: baaaaz\nFoo: baz\n" );
 
 $h = APR::HTTP::Headers::Compat->new( foo => [ "bar", "baz" ] );
 ok( $h->as_string, "Foo: bar\nFoo: baz\n" );
 
-$h = APR::HTTP::Headers::Compat->new( foo => 1, bar => 2, foo_bar => 3 );
+$h
+ = APR::HTTP::Headers::Compat->new( foo => 1, bar => 2, foo_bar => 3 );
 ok( $h->as_string,        "Bar: 2\nFoo: 1\nFoo-Bar: 3\n" );
 ok( $h->as_string( ";" ), "Bar: 2;Foo: 1;Foo-Bar: 3;" );
 
