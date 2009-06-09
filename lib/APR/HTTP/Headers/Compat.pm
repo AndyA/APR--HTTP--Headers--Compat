@@ -3,9 +3,11 @@ package APR::HTTP::Headers::Compat;
 use warnings;
 use strict;
 
+use Carp;
+
 =head1 NAME
 
-APR::HTTP::Headers::Compat - [One line description of module's purpose here]
+APR::HTTP::Headers::Compat - Make an APR::Table look like an HTTP::Headers
 
 =head1 VERSION
 
@@ -17,22 +19,22 @@ our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-    use APR::HTTP::Headers::Compat;
+  use APR::HTTP::Headers::Compat;
   
 =head1 DESCRIPTION
 
 =head1 INTERFACE 
 
-=head2 C<< somfunc >>
+=head2 C<< new >>
 
 =cut
 
+sub new {
+  my $class = shift;
+}
+
 1;
 __END__
-
-=head1 CONFIGURATION AND ENVIRONMENT
-  
-APR::HTTP::Headers::Compat requires no configuration files or environment variables.
 
 =head1 DEPENDENCIES
 
@@ -43,8 +45,6 @@ None.
 None reported.
 
 =head1 BUGS AND LIMITATIONS
-
-No bugs have been reported.
 
 Please report any bugs or feature requests to
 C<bug-apr-http-headers-compat@rt.cpan.org>, or through the web interface at
