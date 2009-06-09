@@ -5,6 +5,8 @@ use strict;
 
 use Carp;
 
+use base qw( HTTP::Headers );
+
 =head1 NAME
 
 APR::HTTP::Headers::Compat - Make an APR::Table look like an HTTP::Headers
@@ -31,6 +33,22 @@ our $VERSION = '0.01';
 
 sub new {
   my $class = shift;
+  my $self  = $class->SUPER::new( @_ );
+  return bless $self, $class;
+}
+
+=head2 C<< remove_header >>
+
+=cut
+
+sub remove_header {
+  my ( $self, @fields ) = @_;
+  return $self->SUPER::remove_header( @fields );
+}
+
+sub _header {
+  my ( $self, $field, $val, $op ) = @_;
+  return $self->SUPER::_header( $field, $val, $op );
 }
 
 1;
