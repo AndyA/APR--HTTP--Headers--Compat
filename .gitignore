@@ -10,3 +10,4 @@ APR-HTTP-Headers-Compat-*
 cover_db
 *.bak
 .*.swp
+.prove

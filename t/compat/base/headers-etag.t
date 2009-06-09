@@ -6,8 +6,9 @@ use Test;
 plan tests => 4;
 
 require HTTP::Headers::ETag;
+require APR::HTTP::Headers::Compat;
 
-my $h = HTTP::Headers->new;
+my $h = APR::HTTP::Headers::Compat->new;
 
 $h->etag( "tag1" );
 ok( $h->etag, qq("tag1") );
