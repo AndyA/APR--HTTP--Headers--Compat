@@ -1,6 +1,7 @@
 ---
 name: APR-HTTP-Headers-Compat
-version: 0.01
+version: 0.02
+
 author:
   - 'Andy Armstrong <andy@hexten.net>'
 abstract: Make an APR::Table look like an HTTP::Headers
