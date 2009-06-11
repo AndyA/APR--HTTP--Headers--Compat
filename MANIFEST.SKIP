@@ -9,6 +9,7 @@
 ^Makefile$
 ^Build$
 ^andy/
+^ref/
 ^incoming/
 ^t/disabled/
 ^blib/

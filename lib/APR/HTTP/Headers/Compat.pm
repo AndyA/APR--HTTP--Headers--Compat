@@ -22,7 +22,7 @@ our $VERSION = '0.01';
 =head1 SYNOPSIS
 
   use APR::HTTP::Headers::Compat;
-  
+
 =head1 DESCRIPTION
 
 =head1 INTERFACE 
