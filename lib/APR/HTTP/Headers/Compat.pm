@@ -43,13 +43,13 @@ sub _magic { tied %{ shift() } }
 
 =head2 C<< clone >>
 
+Clone this object. The clone is a regular L<HTTP::Headers> object.
+
 =cut
 
 sub clone {
   my $self = shift;
-  tie my %clone, 'APR::HTTP::Headers::Compat::MagicHash',
-   $self->_magic->clone;
-  return bless \%clone, ref $self;
+  return bless {%$self}, 'HTTP::Headers';
 }
 
 =head2 C<< table >>
@@ -77,25 +77,15 @@ sub remove_content_headers {
   #
   # it creates a new HTTP::Headers instead of attempting to create a
   # new APR::HTTP::Headers::Compat.
+
   my $class = ref $self;
   bless $self, 'HTTP::Headers';
-  my $other = $self->SUPER::remove_content_headers( @_ );
+  my $other = $self->remove_content_headers( @_ );
   bless $self, $class;
 
-  return $class->new(
-    APR::Table::make( $self->_magic->pool, scalar keys %$other ),
-    %$other );
+  # Return a non-magic HTTP::Headers
+  return $other;
 }
-
-#sub remove_header {
-#  my ( $self, @fields ) = @_;
-#  return $self->SUPER::remove_header( @fields );
-#}
-
-#sub _header {
-#  my ( $self, $field, $val, $op ) = @_;
-#  return $self->SUPER::_header( $field, $val, $op );
-#}
 
 1;
 __END__

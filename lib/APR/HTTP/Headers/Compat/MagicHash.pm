@@ -17,9 +17,6 @@ APR::HTTP::Headers::Compat::MagicHash - Tie a hash to an APR::Table
 sub TIEHASH {
   my ( $class, $table, %args ) = @_;
 
-  # Special case used during cloning
-  return $table if $table->isa( __PACKAGE__ );
-
   my $self = bless {
     hash  => {},
     keys  => [],
@@ -32,31 +29,6 @@ sub TIEHASH {
 
   return $self;
 }
-
-=head2 C<< clone >>
-
-Clone this object.
-
-=cut
-
-sub clone {
-  my $self  = shift;
-  my $table = delete $self->{table};
-  my $clone = dclone $self;
-  $self->{table}  = $table;
-  $clone->{table} = $table->copy( $self->pool );
-  return $clone;
-}
-
-=head2 C<< pool >>
-
-Get the pool to use when cloning this table. This currently returns a
-new top level APR::Pool pending me finding a way to get the pool of an
-existing table.
-
-=cut
-
-sub pool { APR::Pool->new }
 
 =head2 C<< table >>
 
