@@ -1,7 +1,6 @@
 ---
 name: APR-HTTP-Headers-Compat
 version: 0.02
-
 author:
   - 'Andy Armstrong <andy@hexten.net>'
 abstract: Make an APR::Table look like an HTTP::Headers
@@ -19,7 +18,7 @@ requires:
 provides:
   APR::HTTP::Headers::Compat:
     file: lib/APR/HTTP/Headers/Compat.pm
-    version: 0.01
+    version: 0.02
   APR::HTTP::Headers::Compat::MagicArray:
     file: lib/APR/HTTP/Headers/Compat/MagicArray.pm
   APR::HTTP::Headers::Compat::MagicHash:
