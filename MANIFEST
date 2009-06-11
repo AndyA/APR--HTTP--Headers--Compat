@@ -3,6 +3,8 @@ Build.PL
 Changes
 inc/MyBuilder.pm
 lib/APR/HTTP/Headers/Compat.pm
+lib/APR/HTTP/Headers/Compat/MagicArray.pm
+lib/APR/HTTP/Headers/Compat/MagicHash.pm
 MANIFEST
 README
 t/00.load.t

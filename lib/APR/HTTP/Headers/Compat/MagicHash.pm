@@ -3,6 +3,7 @@ package APR::HTTP::Headers::Compat::MagicHash;
 use strict;
 use warnings;
 
+use APR::HTTP::Headers::Compat::MagicArray;
 use APR::Table;
 use Carp qw( confess );
 use HTTP::Headers;
@@ -17,11 +18,7 @@ APR::HTTP::Headers::Compat::MagicHash - Tie a hash to an APR::Table
 sub TIEHASH {
   my ( $class, $table, %args ) = @_;
 
-  my $self = bless {
-    hash  => {},
-    keys  => [],
-    table => $table,
-  }, $class;
+  my $self = bless { table => $table }, $class;
 
   while ( my ( $k, $v ) = each %args ) {
     $self->STORE( $k, $v );
@@ -56,70 +53,112 @@ sub _nicefor {
 
 sub FETCH {
   my ( $self, $key ) = @_;
-  return $self->{hash}{ $self->_nicefor( $key ) };
+  my $nkey = $self->_nicefor( $key );
+  my @vals = $self->table->get( $nkey );
+  return $vals[0] if @vals < 2;
+  tie my @r, 'APR::HTTP::Headers::Compat::MagicArray', $nkey, $self,
+   @vals;
+  return \@r;
+  #  return $self->{hash}{$nkey};
 }
 
 sub STORE {
   my ( $self, $key, $value ) = @_;
   my $nkey = $self->_nicefor( $key );
-  push @{ $self->{keys} }, $key
-   unless exists $self->{hash}{$nkey};
-  $self->{hash}{$nkey} = $value;
+  $self->{rmap}{$nkey} = $key;
+
+  my $table = $self->table;
+  my @vals = 'ARRAY' eq ref $value ? @$value : $value;
+  $table->set( $nkey, shift @vals );
+  $table->add( $nkey, $_ ) for @vals;
+  $self->_changed;
 }
 
 sub DELETE {
   my ( $self, $key ) = @_;
   my $nkey = $self->_nicefor( $key );
-  @{ $self->{keys} } = grep { $_ ne $key } @{ $self->{keys} };
-  delete $self->{hash}{$nkey};
+
+  my $rv = $self->FETCH( $key );
+  $self->table->unset( $nkey );
+  $self->_changed;
+  return $rv;
 }
 
 sub CLEAR {
   my ( $self ) = @_;
-  $self->{hash} = {};
-  $self->{keys} = [];
-  $self->{table}->clear;
+  $self->table->clear;
+  $self->_changed;
 }
 
 sub EXISTS {
   my ( $self, $key ) = @_;
-  return exists $self->{hash}{ $self->_nicefor( $key ) };
+  my %fld = map { $_ => 1 } $self->_keys;
+  return exists $fld{$key};
+}
+
+sub _mkkeys {
+  my $self = shift;
+  my @k    = ();
+  my $rm   = $self->{rmap};
+  my %seen = ();
+  $self->table->do(
+    sub {
+      my ( $k, $v ) = @_;
+      push @k, $rm->{$k} unless $seen{$k}++;
+    } );
+  return \@k;
+}
+
+sub _keys {
+  my $self = shift;
+  return @{ $self->{keys} ||= $self->_mkkeys };
+}
+
+sub _changed {
+  my $self = shift;
+  delete $self->{keys};
 }
 
 sub FIRSTKEY {
   my ( $self ) = @_;
   $self->{pos} = 0;
-  return $self->{keys}[0];
+  return ( $self->_keys )[0];
 }
 
 sub NEXTKEY {
   my ( $self, $lastkey ) = @_;
-  unless ( $self->{keys}[ $self->{pos} ] eq $lastkey ) {
+  my @keys = $self->_keys;
+  unless ( $keys[ $self->{pos} ] eq $lastkey ) {
     my $nk = scalar @{ $self->{keys} };
     for my $i ( 0 .. $nk ) {
-      if ( $self->{keys}[$i] eq $lastkey ) {
+      if ( $keys[$i] eq $lastkey ) {
         $self->{pos} = $i;
         last;
       }
     }
   }
-  return $self->{keys}[ ++$self->{pos} ];
+  return $keys[ ++$self->{pos} ];
 }
 
 sub SCALAR {
   my ( $self ) = @_;
-  return scalar %{ $self->{hash} };
+  return scalar $self->_keys;
 }
 
 sub DESTROY {
   my ( $self ) = @_;
   #    use Data::Dumper;
   #    print STDERR "# ", Dumper($self);
+  #  print STDERR "# <<<\n";
+  #  $self->table->do(
+  #    sub {
+  #      my ( $k, $v ) = @_;
+  #      print STDERR "# $k => $v\n";
+  #    } );
+  #  print STDERR "# >>>\n";
 }
 
-sub UNTIE {
-  my ( $self ) = @_;
-}
+sub UNTIE { }
 
 1;
 

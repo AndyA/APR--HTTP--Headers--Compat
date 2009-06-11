@@ -47,10 +47,7 @@ Clone this object. The clone is a regular L<HTTP::Headers> object.
 
 =cut
 
-sub clone {
-  my $self = shift;
-  return bless {%$self}, 'HTTP::Headers';
-}
+sub clone { bless { %{ shift() } }, 'HTTP::Headers' }
 
 =head2 C<< table >>
 
@@ -80,6 +77,7 @@ sub remove_content_headers {
 
   my $class = ref $self;
   bless $self, 'HTTP::Headers';
+  $DB::single = 1;
   my $other = $self->remove_content_headers( @_ );
   bless $self, $class;
 

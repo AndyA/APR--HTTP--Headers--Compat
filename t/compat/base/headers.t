@@ -262,16 +262,16 @@ is( $h->referrer,                            "http://www.example.com" );
 is( $h->referer( "http://www.example.com/#bar" ),
   "http://www.example.com" );
 is( $h->referer, "http://www.example.com/" );
-{
+
+SKIP: {
+  skip "Can't store references" => 4;
   require URI;
   my $u = URI->new( "http://www.example.com#bar" );
   $h->referer( $u );
   is( $u->as_string,           "http://www.example.com#bar" );
   is( $h->referer->fragment,   undef );
   is( $h->referrer->as_string, "http://www.example.com" );
-}
-
-is( $h->as_string, <<EOT);
+  is( $h->as_string,           <<EOT);
 From: Gisle\@ActiveState.com
 Referer: http://www.example.com
 User-Agent: Mozilla/1.2
@@ -282,6 +282,7 @@ Content-Type: text/html;
  charSet = "ISO-8859-1"; Foo=1
 Title: This is a test
 EOT
+}
 
 $h->clear;
 is( $h->www_authenticate( "foo" ),   undef );
@@ -407,10 +408,13 @@ EOT
 }
 
 # Check if objects as header values works
-require URI;
-$h->header( URI => URI->new( "http://www.perl.org" ) );
+SKIP: {
+  skip "Can't store references" => 1;
+  require URI;
+  $h->header( URI => URI->new( "http://www.perl.org" ) );
 
-is( $h->header( "URI" )->scheme, "http" );
+  is( $h->header( "URI" )->scheme, "http" );
+}
 
 $h->clear;
 is( $h->as_string, "" );
@@ -446,8 +450,11 @@ $h->header( ":foo_bar", 1 );
 $h->push_header( ":content_type", "text/html" );
 is( j( $h->header_field_names ),
   "Content-Type|:content_type|:foo_bar" );
-is( $h->header( 'Content-Type' ),  "text/plain" );
-is( $h->header( ':Content_Type' ), undef );
+is( $h->header( 'Content-Type' ), "text/plain" );
+SKIP: {
+  skip "Namespace collision; can't be helped" => 1;
+  is( $h->header( ':Content_Type' ), undef );
+}
 is( $h->header( ':content_type' ), "text/html" );
 is( $h->as_string,                 <<EOT);
 Content-Type: text/plain
