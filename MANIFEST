@@ -8,6 +8,7 @@ lib/APR/HTTP/Headers/Compat/MagicHash.pm
 MANIFEST
 README
 t/00.load.t
+t/basic.t
 t/compat/base/headers-etag.t
 t/compat/base/headers.t
 t/compat/CAN_TALK_TO_OURSELF

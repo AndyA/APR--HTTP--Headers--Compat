@@ -77,8 +77,7 @@ sub STORE {
 sub DELETE {
   my ( $self, $key ) = @_;
   my $nkey = $self->_nicefor( $key );
-
-  my $rv = $self->FETCH( $key );
+  my $rv   = $self->FETCH( $key );
   $self->table->unset( $nkey );
   $self->_changed;
   return $rv;
@@ -104,7 +103,8 @@ sub _mkkeys {
   $self->table->do(
     sub {
       my ( $k, $v ) = @_;
-      push @k, $rm->{$k} unless $seen{$k}++;
+      my $kk = defined $rm->{$k} ? $rm->{$k} : lc $k;
+      push @k, $kk unless $seen{$kk}++;
     } );
   return \@k;
 }

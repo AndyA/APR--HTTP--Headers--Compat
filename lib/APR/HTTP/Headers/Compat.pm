@@ -24,11 +24,41 @@ our $VERSION = '0.01';
 
   use APR::HTTP::Headers::Compat;
 
+  # We're running under mod_perl2...
+  my $hdrs = APR::HTTP::Headers::Compat->new( $r->headers_out );
+
+  # Now we can treat $hdrs as if it was an HTTP::Headers
+  $hdrs->header( 'Content-Type' => 'text/plain' );
+
 =head1 DESCRIPTION
+
+Under mod_perl HTTP headers are stashed in L<APR::Table> objects.
+Sometimes you will encounter code (such as L<FirePHP::Dispatcher>) that
+needs an L<HTTP::Headers>. This module wraps an C<APR::Table> in a
+subclass of C<HTTP::Headers> so that it can be used wherever an
+C<HTTP::Headers> is expected.
 
 =head1 INTERFACE 
 
+Unless otherwise stated below all methods are inherited from
+C<HTTP::Headers>.
+
 =head2 C<< new >>
+
+Create a new wrapper around an existing C<APR::Table>.
+
+  # Normally you'll be given the table - we're creating one here for the
+  # sake of the example
+  my $table = APR::Table::make( APR::Pool->new, 1 );
+
+  # Wrap the table so it can be used as an HTTP::Headers instance
+  my $h = APR::HTTP::Headers::Compat->new( $table );
+
+Optionally header initialisers may be passed:
+
+  my $h = APR::HTTP::Headers::Compat->new( $table,
+    'Content-type' => 'text/plain'
+  );
 
 =cut
 
@@ -59,6 +89,15 @@ sub table { shift->_magic->table }
 
 =head2 C<< remove_content_headers >>
 
+This will remove all the header fields used to describe the content of a
+message. All header field names prefixed with Content- falls into this
+category, as well as Allow, Expires and Last-Modified. RFC 2616 denote
+these fields as Entity Header Fields.
+
+The return value is a new HTTP::Headers object that contains the removed
+headers only. Note that the returned object is I<not> an
+C<APR::HTTP::Headers::Compat>.
+
 =cut
 
 sub remove_content_headers {
@@ -88,9 +127,19 @@ sub remove_content_headers {
 1;
 __END__
 
+=head1 CAVEATS
+
+Because the underlying storage for the headers is an C<APR::Table>
+attempts to store an object (such as a L<URI> instance) in the table
+will not behave as expected.
+
 =head1 DEPENDENCIES
 
-None.
+L<APR::Pool>, L<APR::Table>, L<HTTP::Headers>, L<Storable>, L<Test::More>
+
+=head1 SEE ALSO
+
+L<FirePHP::Dispatcher>
 
 =head1 INCOMPATIBILITIES
 
