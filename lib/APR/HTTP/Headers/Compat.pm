@@ -14,11 +14,11 @@ APR::HTTP::Headers::Compat - Make an APR::Table look like an HTTP::Headers
 
 =head1 VERSION
 
-This document describes APR::HTTP::Headers::Compat version 0.02
+This document describes APR::HTTP::Headers::Compat version 0.03
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 =head1 SYNOPSIS
 
