@@ -35,23 +35,67 @@ our $VERSION = '0.01';
 sub new {
   my ( $class, $table ) = ( shift, shift );
   my %self = %{ $class->SUPER::new( @_ ) };
-  tie %self, 'APR::HTTP::Headers::Compat::MagicHash', $class, %self;
+  tie %self, 'APR::HTTP::Headers::Compat::MagicHash', $table, %self;
   return bless \%self, $class;
 }
 
-=head2 C<< remove_header >>
+sub _magic { tied %{ shift() } }
+
+=head2 C<< clone >>
 
 =cut
 
-sub remove_header {
-  my ( $self, @fields ) = @_;
-  return $self->SUPER::remove_header( @fields );
+sub clone {
+  my $self = shift;
+  tie my %clone, 'APR::HTTP::Headers::Compat::MagicHash',
+   $self->_magic->clone;
+  return bless \%clone, ref $self;
 }
 
-sub _header {
-  my ( $self, $field, $val, $op ) = @_;
-  return $self->SUPER::_header( $field, $val, $op );
+=head2 C<< table >>
+
+Get the underlying L<APR::Table> object.
+
+=cut
+
+sub table { shift->_magic->table }
+
+=head2 C<< remove_content_headers >>
+
+=cut
+
+sub remove_content_headers {
+  my $self = shift;
+
+  return $self->SUPER::remove_content_headers( @_ )
+   unless defined wantarray;
+
+  # This gets nasty. We downbless ourself to be an HTTP::Headers so that
+  # when HTTP::Headers->remove_content_headers does
+  #
+  #   my $c = ref( $self )->new
+  #
+  # it creates a new HTTP::Headers instead of attempting to create a
+  # new APR::HTTP::Headers::Compat.
+  my $class = ref $self;
+  bless $self, 'HTTP::Headers';
+  my $other = $self->SUPER::remove_content_headers( @_ );
+  bless $self, $class;
+
+  return $class->new(
+    APR::Table::make( $self->_magic->pool, scalar keys %$other ),
+    %$other );
 }
+
+#sub remove_header {
+#  my ( $self, @fields ) = @_;
+#  return $self->SUPER::remove_header( @fields );
+#}
+
+#sub _header {
+#  my ( $self, $field, $val, $op ) = @_;
+#  return $self->SUPER::_header( $field, $val, $op );
+#}
 
 1;
 __END__

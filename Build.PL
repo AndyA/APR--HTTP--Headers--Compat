@@ -16,6 +16,7 @@ my $builder = MyBuilder->new(
     'APR::Pool'     => '2.0.0',
     'APR::Table'    => '2.0.0',
     'HTTP::Headers' => 0,
+    'Storable'      => 0,
     'Test::More'    => 0,
   },
   add_to_cleanup => ['APR-HTTP-Headers-Compat-*'],
