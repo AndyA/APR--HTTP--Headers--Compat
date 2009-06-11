@@ -1,4 +1,3 @@
-.gitignore
 Build.PL
 Changes
 inc/MyBuilder.pm
@@ -6,13 +5,11 @@ lib/APR/HTTP/Headers/Compat.pm
 lib/APR/HTTP/Headers/Compat/MagicArray.pm
 lib/APR/HTTP/Headers/Compat/MagicHash.pm
 MANIFEST
+META.yml
 README
 t/00.load.t
 t/basic.t
 t/compat/base/headers-etag.t
 t/compat/base/headers.t
-t/compat/CAN_TALK_TO_OURSELF
-t/compat/README
-t/compat/TEST
 t/pod-coverage.t
 t/pod.t
