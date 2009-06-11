@@ -35,7 +35,7 @@ our $VERSION = '0.01';
 sub new {
   my ( $class, $table ) = ( shift, shift );
   my %self = %{ $class->SUPER::new( @_ ) };
-  tie %self, 'APR::HTTP::Headers::Compat::MagicHash', %self;
+  tie %self, 'APR::HTTP::Headers::Compat::MagicHash', $class, %self;
   return bless \%self, $class;
 }
 

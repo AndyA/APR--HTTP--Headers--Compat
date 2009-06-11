@@ -4,6 +4,8 @@ use strict;
 use warnings;
 
 use APR::Table;
+use Carp qw( confess );
+use HTTP::Headers;
 
 =head1 NAME
 
@@ -12,29 +14,55 @@ APR::HTTP::Headers::Compat::MagicHash - Tie a hash to an APR::Table
 =cut
 
 sub TIEHASH {
-  my ( $class, %args ) = @_;
-  bless {
-    hash => \%args,
-    keys => [ keys %args ],
+  my ( $class, $table, %args ) = @_;
+
+  my $self = bless {
+    hash  => {},
+    keys  => [],
+    table => $table,
   }, $class;
+
+  while ( my ( $k, $v ) = each %args ) {
+    $self->STORE( $k, $v );
+  }
+
+  return $self;
+}
+
+sub _nicename {
+  my ( $self, @names ) = @_;
+
+  my $hdr    = HTTP::Headers->new( map { $_ => 1 } @names );
+  my @nice   = $hdr->header_field_names;
+  my %lookup = map { lc $_ => $_ } @nice;
+  my @r = map { $lookup{$_} or confess "No mapping for $_" } @names;
+  return wantarray ? @r : $r[0];
+}
+
+sub _nicefor {
+  my ( $self, $name ) = @_;
+  return $name if $name =~ /^:/;
+  return $self->{namemap}{$name} ||= $self->_nicename( $name );
 }
 
 sub FETCH {
   my ( $self, $key ) = @_;
-  return $self->{hash}{$key};
+  return $self->{hash}{ $self->_nicefor( $key ) };
 }
 
 sub STORE {
   my ( $self, $key, $value ) = @_;
+  my $nkey = $self->_nicefor( $key );
   push @{ $self->{keys} }, $key
-   unless exists $self->{hash}{$key};
-  $self->{hash}{$key} = $value;
+   unless exists $self->{hash}{$nkey};
+  $self->{hash}{$nkey} = $value;
 }
 
 sub DELETE {
   my ( $self, $key ) = @_;
+  my $nkey = $self->_nicefor( $key );
   @{ $self->{keys} } = grep { $_ ne $key } @{ $self->{keys} };
-  delete $self->{hash}{$key};
+  delete $self->{hash}{$nkey};
 }
 
 sub CLEAR {
@@ -45,7 +73,7 @@ sub CLEAR {
 
 sub EXISTS {
   my ( $self, $key ) = @_;
-  return exists $self->{hash}{$key};
+  return exists $self->{hash}{ $self->_nicefor( $key ) };
 }
 
 sub FIRSTKEY {
