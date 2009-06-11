@@ -4,6 +4,7 @@ use warnings;
 use strict;
 
 use Carp;
+use APR::HTTP::Headers::Compat::MagicHash;
 
 use base qw( HTTP::Headers );
 
@@ -32,9 +33,10 @@ our $VERSION = '0.01';
 =cut
 
 sub new {
-  my $class = shift;
-  my $self  = $class->SUPER::new( @_ );
-  return bless $self, $class;
+  my ( $class, $table ) = ( shift, shift );
+  my %self = %{ $class->SUPER::new( @_ ) };
+  tie %self, 'APR::HTTP::Headers::Compat::MagicHash', %self;
+  return bless \%self, $class;
 }
 
 =head2 C<< remove_header >>

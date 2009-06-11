@@ -3,10 +3,19 @@
 use strict;
 use Test::More tests => 4;
 
-require HTTP::Headers::ETag;
-require APR::HTTP::Headers::Compat;
+use APR::Pool;
+use APR::Table;
+use APR::HTTP::Headers::Compat;
+use HTTP::Headers::ETag;
 
-my $h = APR::HTTP::Headers::Compat->new;
+my $Pool = APR::Pool->new;
+
+sub mk(@) {
+  my $table = APR::Table::make( $Pool, 10 );
+  return APR::HTTP::Headers::Compat->new( $table, @_ );
+}
+
+my $h = mk;
 
 $h->etag( "tag1" );
 is( $h->etag, qq("tag1") );

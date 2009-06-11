@@ -13,8 +13,10 @@ my $builder = MyBuilder->new(
   dist_version_from    => 'lib/APR/HTTP/Headers/Compat.pm',
   recursive_test_files => 1,
   requires             => {
+    'APR::Pool'     => '2.0.0',
+    'APR::Table'    => '2.0.0',
+    'HTTP::Headers' => 0,
     'Test::More'    => 0,
-    'HTTP::Headers' => 0
   },
   add_to_cleanup => ['APR-HTTP-Headers-Compat-*'],
 );

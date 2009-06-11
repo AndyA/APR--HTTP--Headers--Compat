@@ -1,29 +1,38 @@
 #!perl -w
 
 use strict;
+
 use Test::More tests => 163;
+use APR::Pool;
+use APR::Table;
+use APR::HTTP::Headers::Compat;
 
 my ( $h, $h2 );
 sub j { join( "|", @_ ) }
 
-require APR::HTTP::Headers::Compat;
-$h = APR::HTTP::Headers::Compat->new;
+my $Pool = APR::Pool->new;
+
+sub mk(@) {
+  my $table = APR::Table::make( $Pool, 10 );
+  return APR::HTTP::Headers::Compat->new( $table, @_ );
+}
+
+$h = mk;
 ok( $h );
 is( ref( $h ),     "APR::HTTP::Headers::Compat" );
 is( $h->as_string, "" );
 
-$h = APR::HTTP::Headers::Compat->new(
+$h = mk(
   foo => "bar",
   foo => "baaaaz",
   Foo => "baz"
 );
 is( $h->as_string, "Foo: bar\nFoo: baaaaz\nFoo: baz\n" );
 
-$h = APR::HTTP::Headers::Compat->new( foo => [ "bar", "baz" ] );
+$h = mk( foo => [ "bar", "baz" ] );
 is( $h->as_string, "Foo: bar\nFoo: baz\n" );
 
-$h
- = APR::HTTP::Headers::Compat->new( foo => 1, bar => 2, foo_bar => 3 );
+$h = mk( foo => 1, bar => 2, foo_bar => 3 );
 is( $h->as_string,        "Bar: 2\nFoo: 1\nFoo-Bar: 3\n" );
 is( $h->as_string( ";" ), "Bar: 2;Foo: 1;Foo-Bar: 3;" );
 
@@ -79,7 +88,7 @@ is( j( $h->clone->remove_header( qw(Foo Bar Baz Not-There) ) ),
   "1|2|2|3" );
 is( j( $h->clone->remove_header( "Not-There" ) ), "" );
 
-$h = APR::HTTP::Headers::Compat->new(
+$h = mk(
   allow            => "GET",
   content          => "none",
   content_type     => "text/html",
@@ -137,11 +146,11 @@ $h->clear;
 is( $h->as_string, "" );
 undef( $h2 );
 
-$h = APR::HTTP::Headers::Compat->new;
+$h = mk;
 is( $h->header_field_names,      0 );
 is( j( $h->header_field_names ), "" );
 
-$h = APR::HTTP::Headers::Compat->new(
+$h = mk(
   etag         => 1,
   foo          => [ 2, 3 ],
   content_type => "text/plain"
@@ -169,7 +178,7 @@ is( j( $h->header_field_names ), "ETag|Content-Type|Foo" );
 
 # CONVENIENCE METHODS
 
-$h = APR::HTTP::Headers::Compat->new;
+$h = mk;
 is( $h->date,                    undef );
 is( $h->date( time ),            undef );
 is( j( $h->header_field_names ), "Date" );
@@ -306,9 +315,11 @@ EOT
 
 #---- old tests below -----
 
-$h = new APR::HTTP::Headers::Compat
- mime_version => "1.0",
- content_type => "text/html";
+$h = mk(
+  mime_version => "1.0",
+  content_type => "text/html"
+);
+
 $h->header( URI => "http://www.oslonett.no/" );
 
 is( $h->header( "MIME-Version" ), "1.0" );
@@ -355,7 +366,7 @@ is( join( ";", @x ),
   "Connection;Accept;Accept;Accept;Content-Type;MY-Header" );
 
 # Check headers with embedded newlines:
-$h = APR::HTTP::Headers::Compat->new(
+$h = mk(
   a => "foo\n\n",
   b => "foo\nbar",
   c => "foo\n\nbar\n\n",
@@ -384,7 +395,7 @@ EOT
   local ( $HTTP::Headers::TRANSLATE_UNDERSCORE );
   $HTTP::Headers::TRANSLATE_UNDERSCORE = undef;    # avoid -w warning
 
-  $h = APR::HTTP::Headers::Compat->new;
+  $h = mk;
   $h->header( abc_abc   => "foo" );
   $h->header( "abc-abc" => "bar" );
 
@@ -429,7 +440,7 @@ Content-Type: text/plain
 Content-Foo: foo
 EOT
 
-$h = APR::HTTP::Headers::Compat->new;
+$h = mk;
 $h->content_type( "text/plain" );
 $h->header( ":foo_bar", 1 );
 $h->push_header( ":content_type", "text/html" );
@@ -445,6 +456,6 @@ foo_bar: 1
 EOT
 
 # [RT#30579] IE6 appens "; length = NNNN" on If-Modified-Since (can we handle it)
-$h = APR::HTTP::Headers::Compat->new(
+$h = mk(
   if_modified_since => "Sat, 29 Oct 1994 19:43:31 GMT; length=34343" );
 is( gmtime( $h->if_modified_since ), "Sat Oct 29 19:43:31 1994" );
