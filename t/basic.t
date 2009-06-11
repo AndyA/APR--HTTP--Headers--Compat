@@ -53,7 +53,6 @@ my $Pool = APR::Pool->new;
   $table->set( Foo => 'bar' );
   is $h->header( 'Foo' ), 'bar', 'alter table';
   $table->add( Foo => 'baz' );
-  $DB::single = 1;
   is_deeply [ $h->header( 'Foo' ) ], [ 'bar', 'baz' ],
    'alter table again';
 }
