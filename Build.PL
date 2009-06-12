@@ -15,6 +15,7 @@ my $builder = MyBuilder->new(
   requires             => {
     'APR::Pool'     => 0,
     'APR::Table'    => 0,
+    'File::Find'    => 0,
     'HTTP::Headers' => 0,
     'Storable'      => 0,
     'Test::More'    => 0,

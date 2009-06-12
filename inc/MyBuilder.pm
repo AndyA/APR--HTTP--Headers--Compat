@@ -43,6 +43,12 @@ sub _auto_bugtracker {
   'http://rt.cpan.org/NoAuth/Bugs.html?Dist=' . shift->dist_name;
 }
 
+sub ACTION_disttest {
+  my $self = shift;
+  $self->depends_on( 'testauthor' );
+  $self->SUPER::ACTION_disttest( @_ );
+}
+
 sub ACTION_testauthor {
   my $self = shift;
   $self->test_files( 'xt/author' );
@@ -54,16 +60,14 @@ sub ACTION_critic {
 }
 
 sub ACTION_tags {
-  exec(
-    qw(
+  exec( qw(
      ctags -f tags --recurse --totals
      --exclude=blib
      --exclude=.svn
      --exclude='*~'
      --languages=Perl
      t/ lib/
-     )
-  );
+  ) );
 }
 
 sub ACTION_tidy {

@@ -11,5 +11,7 @@ t/00.load.t
 t/basic.t
 t/compat/base/headers-etag.t
 t/compat/base/headers.t
-t/pod-coverage.t
-t/pod.t
+xt/author/manifest.t
+xt/author/pod-coverage.t
+xt/author/pod.t
+xt/author/preflight.t
