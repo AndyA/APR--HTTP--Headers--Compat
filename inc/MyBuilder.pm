@@ -49,6 +49,12 @@ sub ACTION_disttest {
   $self->SUPER::ACTION_disttest( @_ );
 }
 
+sub ACTION_dist {
+  my $self = shift;
+  $self->depends_on( 'disttest' );
+  $self->SUPER::ACTION_dist( @_ );
+}
+
 sub ACTION_testauthor {
   my $self = shift;
   $self->test_files( 'xt/author' );
